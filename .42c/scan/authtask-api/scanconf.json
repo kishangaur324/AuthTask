@@ -1,0 +1,513 @@
+{
+    "version": "2.0.0",
+    "runtimeConfiguration": {
+        "environment": "default",
+        "laxTestingModeEnabled": false,
+        "apiConnectivityCheck": true,
+        "logLevel": "error",
+        "logDestination": "stdout+platform",
+        "logMaxFileSize": 2147483648,
+        "requestHeaderNameRequestId": "x-scan-request-id",
+        "requestHeaderNameScenarioId": "x-scan-scenario-id",
+        "requestHeaderNameRequestType": "x-scan-request-type",
+        "requestFlowrate": 100,
+        "requestTimeout": 30,
+        "requestTlsInsecureSkipVerify": true,
+        "responseFollowRedirection": false,
+        "responseMaxBodySizeScan": 10485760,
+        "happyPathOnly": false,
+        "maxRequestRetryAttempts": 5,
+        "maxScanDuration": 1800,
+        "memoryLimit": 2147483648,
+        "memoryTimeSpan": 10,
+        "reportMaxRequestSizeHappyPath": 8092,
+        "reportMaxRequestSizeTest": 8092,
+        "reportIncludeRequestBody": true,
+        "reportIncludeResponseBody": true,
+        "reportMaxHttpResponseSizeHappyPath": 8092,
+        "reportMaxBodySizeHappyPath": 8092,
+        "reportMaxHttpResponseSizeTest": 8092,
+        "reportMaxBodySizeTest": 8092,
+        "reportIssuesOnly": false,
+        "reportMaxIssues": 1000,
+        "reportMaxSize": 20971520,
+        "reportGenerateCurlCommand": true,
+        "normalizeServerUrls": true
+    },
+    "customizations": {
+        "happyPaths": {
+            "retry": 1,
+            "responsePolicy": {
+                "httpStatusExpected": true,
+                "mustBeConformant": true
+            },
+            "httpStatusExpected": [
+                "2XX",
+                "404"
+            ]
+        },
+        "tests": {
+            "responsePolicy": {
+                "httpStatusExpected": true,
+                "mustBeConformant": true
+            }
+        },
+        "requests": {}
+    },
+    "authenticationDetails": [
+        {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-API-KEY",
+                "default": "ApiKeyAuth",
+                "credentials": {
+                    "ApiKeyAuth": {
+                        "description": "ApiKeyAuth security",
+                        "credential": "{{ApiKeyAuth}}"
+                    }
+                }
+            },
+            "BearerAuth": {
+                "type": "bearer",
+                "default": "BearerAuth",
+                "credentials": {
+                    "BearerAuth": {
+                        "description": "BearerAuth security",
+                        "credential": "{{BearerAuth}}"
+                    }
+                }
+            }
+        }
+    ],
+    "operations": {
+        "/api/Auth/login:post": {
+            "operationId": "/api/Auth/login:post",
+            "scenarios": [
+                {
+                    "key": "happy.path",
+                    "fuzzing": true,
+                    "requests": [
+                        {
+                            "$ref": "#/operations/~1api~1Auth~1login:post/request",
+                            "fuzzing": true
+                        }
+                    ]
+                }
+            ],
+            "request": {
+                "operationId": "/api/Auth/login:post",
+                "auth": [
+                    "ApiKeyAuth"
+                ],
+                "request": {
+                    "type": "42c",
+                    "details": {
+                        "url": "{{host}}/api/Auth/login",
+                        "method": "POST",
+                        "headers": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/x-www-form-urlencoded"
+                            }
+                        ],
+                        "requestBody": {
+                            "mode": "urlencoded",
+                            "urlencoded": {
+                                "email": {
+                                    "value": "leupndxrmyspjsqyyvtsvgenefrmfodz"
+                                },
+                                "password": {
+                                    "value": "sarahygtaqfzuiqmugieswpmioyzimyq"
+                                }
+                            }
+                        }
+                    }
+                },
+                "defaultResponse": "200",
+                "responses": {
+                    "200": {
+                        "expectations": {
+                            "httpStatus": 200
+                        }
+                    },
+                    "401": {
+                        "expectations": {
+                            "httpStatus": 401
+                        }
+                    },
+                    "403": {
+                        "expectations": {
+                            "httpStatus": 403
+                        }
+                    },
+                    "429": {
+                        "expectations": {
+                            "httpStatus": 429
+                        }
+                    }
+                }
+            }
+        },
+        "/api/Auth/register:post": {
+            "operationId": "/api/Auth/register:post",
+            "scenarios": [
+                {
+                    "key": "happy.path",
+                    "fuzzing": true,
+                    "requests": [
+                        {
+                            "$ref": "#/operations/~1api~1Auth~1register:post/request",
+                            "fuzzing": true
+                        }
+                    ]
+                }
+            ],
+            "request": {
+                "operationId": "/api/Auth/register:post",
+                "auth": [
+                    "ApiKeyAuth"
+                ],
+                "request": {
+                    "type": "42c",
+                    "details": {
+                        "url": "{{host}}/api/Auth/register",
+                        "method": "POST",
+                        "headers": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/x-www-form-urlencoded"
+                            }
+                        ],
+                        "requestBody": {
+                            "mode": "urlencoded",
+                            "urlencoded": {
+                                "email": {
+                                    "value": "xhorwgvqushveuvmmbbjkxiwpsgvmzzw"
+                                },
+                                "password": {
+                                    "value": "cwkmwzcvxvvaukvzawvptqpqudvgdlxz"
+                                },
+                                "role": {
+                                    "value": "qusvcpvfddolupgaobddkjnucgelknlc"
+                                }
+                            }
+                        }
+                    }
+                },
+                "defaultResponse": "200",
+                "responses": {
+                    "200": {
+                        "expectations": {
+                            "httpStatus": 200
+                        }
+                    },
+                    "400": {
+                        "expectations": {
+                            "httpStatus": 400
+                        }
+                    },
+                    "401": {
+                        "expectations": {
+                            "httpStatus": 401
+                        }
+                    },
+                    "403": {
+                        "expectations": {
+                            "httpStatus": 403
+                        }
+                    },
+                    "429": {
+                        "expectations": {
+                            "httpStatus": 429
+                        }
+                    }
+                }
+            }
+        },
+        "/api/Employee/list:post": {
+            "operationId": "/api/Employee/list:post",
+            "scenarios": [
+                {
+                    "key": "happy.path",
+                    "fuzzing": true,
+                    "requests": [
+                        {
+                            "$ref": "#/operations/~1api~1Employee~1list:post/request",
+                            "fuzzing": true
+                        }
+                    ]
+                }
+            ],
+            "request": {
+                "operationId": "/api/Employee/list:post",
+                "auth": [
+                    "BearerAuth"
+                ],
+                "request": {
+                    "type": "42c",
+                    "details": {
+                        "url": "{{host}}/api/Employee/list",
+                        "method": "POST",
+                        "headers": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "requestBody": {
+                            "mode": "json",
+                            "json": {
+                                "pageNumber": 1,
+                                "pageSize": 10,
+                                "search": "john"
+                            }
+                        }
+                    }
+                },
+                "defaultResponse": "200",
+                "responses": {
+                    "200": {
+                        "expectations": {
+                            "httpStatus": 200
+                        }
+                    },
+                    "400": {
+                        "expectations": {
+                            "httpStatus": 400
+                        }
+                    },
+                    "401": {
+                        "expectations": {
+                            "httpStatus": 401
+                        }
+                    },
+                    "403": {
+                        "expectations": {
+                            "httpStatus": 403
+                        }
+                    },
+                    "429": {
+                        "expectations": {
+                            "httpStatus": 429
+                        }
+                    }
+                }
+            }
+        },
+        "/api/Employee/update:put": {
+            "operationId": "/api/Employee/update:put",
+            "scenarios": [
+                {
+                    "key": "happy.path",
+                    "fuzzing": true,
+                    "requests": [
+                        {
+                            "$ref": "#/operations/~1api~1Employee~1update:put/request",
+                            "fuzzing": true
+                        }
+                    ]
+                }
+            ],
+            "request": {
+                "operationId": "/api/Employee/update:put",
+                "auth": [
+                    "BearerAuth"
+                ],
+                "request": {
+                    "type": "42c",
+                    "details": {
+                        "url": "{{host}}/api/Employee/update",
+                        "method": "PUT",
+                        "headers": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "requestBody": {
+                            "mode": "json",
+                            "json": {
+                                "dateOfJoining": "fhimnuocdmzzddanaekcjjwxsqaqjpjd",
+                                "dateOfLeaving": "ykjrobygpoxyozhmzvcqstqdhjocghvk",
+                                "departmentId": "ezsafflcgrmqkecwcbxwvvahaqxtbeci",
+                                "email": "rfqoptzkbvtcaucszpufezvifottadts",
+                                "employeeCode": "qbywzdynrpfeturwaptnybmzgopypejo",
+                                "firstName": "ohdcdennyqjmfshqbbdihvhlxcmlgkgm",
+                                "id": "oyswoylpsrjazfkzcfcumqrvefvvyynz",
+                                "isActive": false,
+                                "lastName": "ilqxmmzhppwfypdbwzhsieihetfxacjz",
+                                "managerId": "awerlnzlrcvitttqooqwljkplhizddtd",
+                                "phoneNumber": "iajllsptwhvvvvlabvqhqsiwenkvjlcd"
+                            }
+                        }
+                    }
+                },
+                "defaultResponse": "200",
+                "responses": {
+                    "200": {
+                        "expectations": {
+                            "httpStatus": 200
+                        }
+                    },
+                    "400": {
+                        "expectations": {
+                            "httpStatus": 400
+                        }
+                    },
+                    "401": {
+                        "expectations": {
+                            "httpStatus": 401
+                        }
+                    },
+                    "429": {
+                        "expectations": {
+                            "httpStatus": 429
+                        }
+                    }
+                }
+            }
+        },
+        "/api/Employee/{id}:delete": {
+            "operationId": "/api/Employee/{id}:delete",
+            "scenarios": [
+                {
+                    "key": "happy.path",
+                    "fuzzing": true,
+                    "requests": [
+                        {
+                            "$ref": "#/operations/~1api~1Employee~1{id}:delete/request",
+                            "fuzzing": true
+                        }
+                    ]
+                }
+            ],
+            "request": {
+                "operationId": "/api/Employee/{id}:delete",
+                "auth": [
+                    "BearerAuth"
+                ],
+                "request": {
+                    "type": "42c",
+                    "details": {
+                        "url": "{{host}}/api/Employee/{id}",
+                        "method": "DELETE",
+                        "paths": [
+                            {
+                                "key": "id",
+                                "value": "hhqhvkciejlkbvrjmggikgreiwqmapqs"
+                            }
+                        ]
+                    }
+                },
+                "defaultResponse": "200",
+                "responses": {
+                    "200": {
+                        "expectations": {
+                            "httpStatus": 200
+                        }
+                    },
+                    "400": {
+                        "expectations": {
+                            "httpStatus": 400
+                        }
+                    },
+                    "401": {
+                        "expectations": {
+                            "httpStatus": 401
+                        }
+                    },
+                    "403": {
+                        "expectations": {
+                            "httpStatus": 403
+                        }
+                    },
+                    "429": {
+                        "expectations": {
+                            "httpStatus": 429
+                        }
+                    }
+                }
+            }
+        },
+        "/api/Employee/{id}:get": {
+            "operationId": "/api/Employee/{id}:get",
+            "scenarios": [
+                {
+                    "key": "happy.path",
+                    "fuzzing": true,
+                    "requests": [
+                        {
+                            "$ref": "#/operations/~1api~1Employee~1{id}:get/request",
+                            "fuzzing": true
+                        }
+                    ]
+                }
+            ],
+            "request": {
+                "operationId": "/api/Employee/{id}:get",
+                "auth": [
+                    "BearerAuth"
+                ],
+                "request": {
+                    "type": "42c",
+                    "details": {
+                        "url": "{{host}}/api/Employee/{id}",
+                        "method": "GET",
+                        "paths": [
+                            {
+                                "key": "id",
+                                "value": "fljxwfuqffvnvzpysgslkwszhmpllsno"
+                            }
+                        ]
+                    }
+                },
+                "defaultResponse": "200",
+                "responses": {
+                    "200": {
+                        "expectations": {
+                            "httpStatus": 200
+                        }
+                    },
+                    "400": {
+                        "expectations": {
+                            "httpStatus": 400
+                        }
+                    },
+                    "401": {
+                        "expectations": {
+                            "httpStatus": 401
+                        }
+                    },
+                    "429": {
+                        "expectations": {
+                            "httpStatus": 429
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "environments": {
+        "default": {
+            "variables": {
+                "ApiKeyAuth": {
+                    "from": "environment",
+                    "name": "SCAN42C_SECURITY_APIKEYAUTH",
+                    "required": true
+                },
+                "BearerAuth": {
+                    "from": "environment",
+                    "name": "SCAN42C_SECURITY_BEARERAUTH",
+                    "required": true
+                },
+                "host": {
+                    "from": "environment",
+                    "name": "SCAN42C_HOST",
+                    "required": false,
+                    "default": "https://localhost:7111"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="AuthTask.Application/AuthTask.Application.csproj" />
+  <Project Path="AuthTask.Domain/AuthTask.Domain.csproj" />
+  <Project Path="AuthTask.Infrastructure/AuthTask.Infrastructure.csproj" />
+  <Project Path="AuthTask.UnitTests/AuthTask.UnitTests.csproj" />
+  <Project Path="AuthTask/AuthTask.csproj" />
+</Solution>

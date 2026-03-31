@@ -1,0 +1,3 @@
+apis:
+  AuthTask/swagger.yml:
+    alias: authtask-api
