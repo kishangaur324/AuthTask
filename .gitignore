@@ -31,6 +31,12 @@ Thumbs.db
 
 # Local tools / temp folders
 .dotnet_cli_home/
+.dotnet/
+.42c/
+
+# Tooling cache / telemetry artifacts
+*.cache
+*.trn
 
 # Environment files
 .env

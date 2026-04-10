@@ -4,8 +4,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuthTask.Extensions
 {
+    /// <summary>
+    /// Database initialization helpers for migrations and seed data.
+    /// </summary>
     public static class MigrationExtension
     {
+        /// <summary>
+        /// Applies pending migrations and seeds role data with retry support.
+        /// </summary>
+        /// <param name="app">Web application instance.</param>
         public static async Task InitializeDatabaseAsync(this WebApplication app)
         {
             using var scope = app.Services.CreateScope();
@@ -18,6 +25,7 @@ namespace AuthTask.Extensions
             {
                 try
                 {
+                    // Retry to tolerate transient startup/database readiness issues.
                     await db.Database.MigrateAsync();
                     break;
                 }
@@ -33,6 +41,7 @@ namespace AuthTask.Extensions
             {
                 try
                 {
+                    // Roles are seeded after migration so the schema is guaranteed to exist.
                     await DbRoleSeeder.SeedRolesAsync(scope.ServiceProvider);
                     break;
                 }

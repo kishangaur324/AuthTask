@@ -8,15 +8,23 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AuthTask.Application.Services
 {
+    /// <summary>
+    /// Generates JWT access tokens from configured issuer settings.
+    /// </summary>
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _configuration;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TokenService"/> class.
+        /// </summary>
+        /// <param name="configuration">Application configuration.</param>
         public TokenService(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
+        /// <inheritdoc />
         public string GenerateToken(User user, IList<string> roles)
         {
             var claims = new List<Claim>()

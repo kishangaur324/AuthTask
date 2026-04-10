@@ -4,8 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AuthTask.Extensions
 {
+    /// <summary>
+    /// Converts application <see cref="Result{T}"/> values into HTTP action results.
+    /// </summary>
     public static class ResultExtensions
     {
+        /// <summary>
+        /// Maps a result object to a framework <see cref="IActionResult"/>.
+        /// </summary>
+        /// <typeparam name="T">Payload type wrapped by the result.</typeparam>
+        /// <param name="result">Application result.</param>
+        /// <returns>Mapped HTTP response.</returns>
         public static IActionResult ToActionResult<T>(this Result<T> result)
         {
             return result.Status switch

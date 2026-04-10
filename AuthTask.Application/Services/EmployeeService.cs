@@ -3,11 +3,15 @@ using AuthTask.Application.DTOs;
 using AuthTask.Application.Interfaces;
 using AuthTask.Domain.Entities;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace AuthTask.Application.Services
 {
+    /// <summary>
+    /// Implements employee-related business logic.
+    /// </summary>
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _employeeRepository;
@@ -15,13 +19,24 @@ namespace AuthTask.Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<EmployeeService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IValidator<CreateEmployeeDto> _createEmployeeValidator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EmployeeService"/> class.
+        /// </summary>
+        /// <param name="employeeRepository">Employee repository.</param>
+        /// <param name="unitOfWork">Unit-of-work abstraction.</param>
+        /// <param name="mapper">Object mapper.</param>
+        /// <param name="logger">Logger instance.</param>
+        /// <param name="httpContextAccessor">HTTP context accessor.</param>
+        /// <param name="createEmployeeValidator">Create employee validator.</param>
         public EmployeeService(
             IEmployeeRepository employeeRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<EmployeeService> logger,
-            IHttpContextAccessor httpContextAccessor
+            IHttpContextAccessor httpContextAccessor,
+            IValidator<CreateEmployeeDto> createEmployeeValidator
         )
         {
             _employeeRepository = employeeRepository;
@@ -29,19 +44,34 @@ namespace AuthTask.Application.Services
             _mapper = mapper;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
+            _createEmployeeValidator = createEmployeeValidator;
         }
 
+        /// <inheritdoc />
         public async Task<Result<Guid>> AddAsync(
             CreateEmployeeDto createEmployee,
             CancellationToken cancellationToken = default
         )
         {
             _logger.LogInformation("Creating employee {Email}", createEmployee.Email);
+
+            var validationResult = await _createEmployeeValidator.ValidateAsync(
+                createEmployee,
+                cancellationToken
+            );
+            if (!validationResult.IsValid)
+            {
+                var error = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                _logger.LogWarning("Create employee request is invalid: {error}", error);
+                return Result<Guid>.Failure(error);
+            }
+
             var employee = _mapper.Map<Employee>(createEmployee);
             await _employeeRepository.AddAsync(employee, cancellationToken);
             return Result<Guid>.Success(employee.Id);
         }
 
+        /// <inheritdoc />
         public async Task<Result<string>> UpdateAsync(
             UpdateEmployeeDto updateEmployee,
             CancellationToken cancellationToken = default
@@ -84,6 +114,7 @@ namespace AuthTask.Application.Services
             }
         }
 
+        /// <inheritdoc />
         public async Task<Result<string>> DeleteAsync(
             Guid id,
             CancellationToken cancellationToken = default
@@ -104,6 +135,7 @@ namespace AuthTask.Application.Services
             }
         }
 
+        /// <inheritdoc />
         public async Task<Result<EmployeeDto>> GetAsync(
             Guid id,
             CancellationToken cancellationToken = default
@@ -118,6 +150,7 @@ namespace AuthTask.Application.Services
                     ?.Value;
                 var isAdmin = _httpContextAccessor.HttpContext.User.IsInRole("admin");
 
+                // Users can fetch their own record; admins can fetch any record.
                 return isAdmin || (employee != null && employee.UserId == currentUserId)
                         ? Result<EmployeeDto>.Success(_mapper.Map<EmployeeDto>(employee))
                     : employee == null ? Result<EmployeeDto>.NotFound("User not found.")
@@ -130,6 +163,7 @@ namespace AuthTask.Application.Services
             }
         }
 
+        /// <inheritdoc />
         public async Task<Result<PaginationResponse<EmployeeDto>>> GetAllAsync(
             PaginationRequest pagination,
             CancellationToken cancellationToken = default

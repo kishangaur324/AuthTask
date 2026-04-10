@@ -1,8 +1,10 @@
 openapi: 3.0.3
 info:
   title: AuthTask API
-  version: "1.0.0"
-  description: OpenAPI specification generated from the current controllers, DTOs, and service return types.
+  version: "1.1.1"
+  description: >
+    OpenAPI contract aligned with current controllers, validators, and result mapping.
+    This spec includes only status codes explicitly anticipated by the current API code.
 
 servers:
   - url: https://localhost:7111
@@ -12,15 +14,17 @@ servers:
 
 tags:
   - name: Auth
+    description: Registration and authentication endpoints.
   - name: Employee
+    description: Employee management endpoints.
 
 paths:
   /api/Auth/register:
     post:
-      tags:
-        - Auth
+      tags: [Auth]
+      operationId: registerUser
       summary: Register a new user
-      description: Requires `X-API-KEY` and is rate-limited to 5 requests per minute.
+      description: Requires `X-API-KEY` and uses auth-specific rate limiting.
       security:
         - ApiKeyAuth: []
       requestBody:
@@ -39,27 +43,58 @@ paths:
             X-Tracking-Id:
               $ref: "#/components/headers/XTrackingId"
           content:
-            text/plain:
-              schema:
-                $ref: "#/components/schemas/SimpleMessage"
             application/json:
               schema:
-                $ref: "#/components/schemas/SimpleMessage"
+                $ref: "#/components/schemas/ApiResponseRegisterResponse"
         "400":
-          $ref: "#/components/responses/BadRequestString"
+          $ref: "#/components/responses/ValidationError"
         "401":
-          $ref: "#/components/responses/UnauthorizedApiKeyOrAuth"
+          description: API key is missing.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
         "403":
-          $ref: "#/components/responses/ForbiddenApiKey"
+          description: API key is invalid.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
+        "409":
+          description: Conflict (for example duplicate username/email).
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+        "500":
+          description: Internal server error.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ApiResponseRegisterResponse"
+                  - $ref: "#/components/schemas/ApiResponseString"
 
   /api/Auth/login:
     post:
-      tags:
-        - Auth
+      tags: [Auth]
+      operationId: loginUser
       summary: Authenticate and get JWT token
-      description: Requires `X-API-KEY` and is rate-limited to 5 requests per minute.
+      description: Requires `X-API-KEY` and uses auth-specific rate limiting.
       security:
         - ApiKeyAuth: []
       requestBody:
@@ -80,18 +115,45 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                $ref: "#/components/schemas/ApiResponseLoginResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
         "401":
-          $ref: "#/components/responses/UnauthorizedApiKeyOrAuth"
+          description: API key is missing or credentials are invalid.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ApiResponseString"
+                  - $ref: "#/components/schemas/ApiResponseLoginResponse"
         "403":
-          $ref: "#/components/responses/ForbiddenApiKey"
+          description: API key is invalid.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+        "500":
+          description: Internal server error.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
 
   /api/Employee/update:
     put:
-      tags:
-        - Employee
+      tags: [Employee]
+      operationId: updateEmployee
       summary: Update employee details
       security:
         - BearerAuth: []
@@ -102,40 +164,45 @@ paths:
             schema:
               $ref: "#/components/schemas/UpdateEmployeeDto"
       responses:
-        "200":
+        "204":
           description: Employee updated successfully.
           headers:
             X-Tracking-Id:
               $ref: "#/components/headers/XTrackingId"
-          content:
-            text/plain:
-              schema:
-                $ref: "#/components/schemas/SimpleMessage"
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SimpleMessage"
         "400":
-          $ref: "#/components/responses/BadRequestString"
+          $ref: "#/components/responses/ValidationError"
         "401":
           $ref: "#/components/responses/UnauthorizedBearer"
+        "404":
+          description: Employee not found.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+        "500":
+          description: Internal server error.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
 
   /api/Employee/{id}:
     get:
-      tags:
-        - Employee
+      tags: [Employee]
+      operationId: getEmployeeById
       summary: Get employee by ID
       security:
         - BearerAuth: []
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: Employee identifier.
-          schema:
-            type: string
-            format: uuid
+        - $ref: "#/components/parameters/EmployeeId"
       responses:
         "200":
           description: Employee retrieved successfully.
@@ -145,55 +212,78 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/EmployeeDto"
+                $ref: "#/components/schemas/ApiResponseEmployeeDto"
         "400":
-          $ref: "#/components/responses/BadRequestString"
+          $ref: "#/components/responses/ValidationError"
         "401":
-          $ref: "#/components/responses/UnauthorizedBearer"
+          description: Missing/invalid bearer token or business-level unauthorized access.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ProblemDetails"
+                  - $ref: "#/components/schemas/ApiResponseEmployeeDto"
+        "404":
+          description: Employee not found.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEmployeeDto"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+        "500":
+          description: Internal server error.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEmployeeDto"
 
     delete:
-      tags:
-        - Employee
+      tags: [Employee]
+      operationId: deleteEmployee
       summary: Delete employee by ID
       description: Requires authenticated user with `admin` role.
       security:
         - BearerAuth: []
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: Employee identifier.
-          schema:
-            type: string
-            format: uuid
+        - $ref: "#/components/parameters/EmployeeId"
       responses:
-        "200":
+        "204":
           description: Employee deleted successfully.
           headers:
             X-Tracking-Id:
               $ref: "#/components/headers/XTrackingId"
-          content:
-            text/plain:
-              schema:
-                $ref: "#/components/schemas/SimpleMessage"
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SimpleMessage"
         "400":
-          $ref: "#/components/responses/BadRequestString"
+          $ref: "#/components/responses/ValidationError"
         "401":
           $ref: "#/components/responses/UnauthorizedBearer"
         "403":
-          $ref: "#/components/responses/ForbiddenRole"
+          $ref: "#/components/responses/ForbiddenBearer"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+        "500":
+          description: Internal server error.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseString"
 
   /api/Employee/list:
     post:
-      tags:
-        - Employee
+      tags: [Employee]
+      operationId: getEmployees
       summary: Get paginated employee list
       description: Requires authenticated user with `admin` role.
       security:
@@ -213,15 +303,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginationResponseEmployeeDto"
+                $ref: "#/components/schemas/ApiResponsePaginationResponseEmployeeDto"
         "400":
-          $ref: "#/components/responses/BadRequestString"
+          $ref: "#/components/responses/ValidationError"
         "401":
           $ref: "#/components/responses/UnauthorizedBearer"
         "403":
-          $ref: "#/components/responses/ForbiddenRole"
+          $ref: "#/components/responses/ForbiddenBearer"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+        "500":
+          description: Internal server error.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponsePaginationResponseEmployeeDto"
 
 components:
   securitySchemes:
@@ -229,12 +328,12 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT bearer token in `Authorization` header.
+      description: "JWT bearer token in `Authorization: Bearer <token>`."
     ApiKeyAuth:
       type: apiKey
       in: header
       name: X-API-KEY
-      description: API key required for auth endpoints.
+      description: API key for auth endpoints.
 
   headers:
     XTrackingId:
@@ -242,37 +341,26 @@ components:
       schema:
         type: string
 
-  responses:
-    BadRequestString:
-      description: Bad request.
-      headers:
-        X-Tracking-Id:
-          $ref: "#/components/headers/XTrackingId"
-      content:
-        text/plain:
-          schema:
-            $ref: "#/components/schemas/SimpleMessage"
-        application/json:
-          schema:
-            oneOf:
-              - $ref: "#/components/schemas/SimpleMessage"
-              - $ref: "#/components/schemas/ProblemDetails"
+  parameters:
+    EmployeeId:
+      name: id
+      in: path
+      required: true
+      description: Employee identifier.
+      schema:
+        type: string
+        format: uuid
 
-    UnauthorizedApiKeyOrAuth:
-      description: Unauthorized due to missing API key, invalid credentials, or invalid JWT.
+  responses:
+    ValidationError:
+      description: Request validation failed.
       headers:
         X-Tracking-Id:
           $ref: "#/components/headers/XTrackingId"
       content:
-        text/plain:
-          schema:
-            $ref: "#/components/schemas/SimpleMessage"
         application/json:
           schema:
-            oneOf:
-              - $ref: "#/components/schemas/SimpleMessage"
-              - $ref: "#/components/schemas/ApiKeyErrorResponse"
-              - $ref: "#/components/schemas/ProblemDetails"
+            $ref: "#/components/schemas/ValidationProblemDetails"
 
     UnauthorizedBearer:
       description: Unauthorized. Missing or invalid JWT bearer token.
@@ -284,18 +372,8 @@ components:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
 
-    ForbiddenApiKey:
-      description: Invalid API key.
-      headers:
-        X-Tracking-Id:
-          $ref: "#/components/headers/XTrackingId"
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ApiKeyErrorResponse"
-
-    ForbiddenRole:
-      description: Forbidden. Authenticated user does not have required role.
+    ForbiddenBearer:
+      description: Forbidden. Authenticated user lacks required permission/role.
       headers:
         X-Tracking-Id:
           $ref: "#/components/headers/XTrackingId"
@@ -315,40 +393,6 @@ components:
             $ref: "#/components/schemas/ProblemDetails"
 
   schemas:
-    SimpleMessage:
-      type: string
-      example: User created successfully
-
-    ApiKeyErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: API key is missing
-      required:
-        - message
-
-    ProblemDetails:
-      type: object
-      properties:
-        type:
-          type: string
-          nullable: true
-        title:
-          type: string
-          nullable: true
-        status:
-          type: integer
-          format: int32
-          nullable: true
-        detail:
-          type: string
-          nullable: true
-        instance:
-          type: string
-          nullable: true
-      additionalProperties: true
-
     RegisterRequest:
       type: object
       properties:
@@ -357,12 +401,24 @@ components:
           format: email
         password:
           type: string
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,15}$'
+          minLength: 8
+          maxLength: 15
         role:
           type: string
-      required:
-        - email
-        - password
-        - role
+          enum: [admin, employee]
+      required: [email, password, role]
+
+    RegisterResponse:
+      type: object
+      properties:
+        employeeId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+      required: [employeeId, email]
 
     LoginRequest:
       type: object
@@ -372,17 +428,17 @@ components:
           format: email
         password:
           type: string
-      required:
-        - email
-        - password
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,15}$'
+          minLength: 8
+          maxLength: 15
+      required: [email, password]
 
-    AuthResponse:
+    LoginResponse:
       type: object
       properties:
         accessToken:
           type: string
-      required:
-        - accessToken
+      required: [accessToken]
 
     UpdateEmployeeDto:
       type: object
@@ -392,15 +448,19 @@ components:
           format: uuid
         employeeCode:
           type: string
+          maxLength: 20
         firstName:
           type: string
+          maxLength: 100
         lastName:
           type: string
+          maxLength: 100
         email:
           type: string
           format: email
         phoneNumber:
           type: string
+          pattern: '^\+?[0-9]{8,15}$'
         departmentId:
           type: string
           format: uuid
@@ -476,19 +536,19 @@ components:
           type: integer
           format: int32
           minimum: 1
+          maximum: 100
           default: 10
           example: 10
         search:
           type: string
           nullable: true
+          maxLength: 100
           example: john
         skip:
           type: integer
           format: int32
           readOnly: true
-          description: Computed server-side from `pageNumber` and `pageSize`.
-      required:
-        - pageNumber
+      required: [pageNumber]
 
     PaginationResponseEmployeeDto:
       type: object
@@ -500,6 +560,97 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/EmployeeDto"
-      required:
-        - totalCount
-        - items
+      required: [totalCount, items]
+
+    ApiResponseString:
+      type: object
+      properties:
+        data:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+
+    ApiResponseRegisterResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/RegisterResponse"
+        error:
+          type: string
+          nullable: true
+
+    ApiResponseLoginResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/LoginResponse"
+        error:
+          type: string
+          nullable: true
+
+    ApiResponseEmployeeDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/EmployeeDto"
+        error:
+          type: string
+          nullable: true
+
+    ApiResponsePaginationResponseEmployeeDto:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PaginationResponseEmployeeDto"
+        error:
+          type: string
+          nullable: true
+
+    ValidationProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        status:
+          type: integer
+          format: int32
+          nullable: true
+        detail:
+          type: string
+          nullable: true
+        instance:
+          type: string
+          nullable: true
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        status:
+          type: integer
+          format: int32
+          nullable: true
+        detail:
+          type: string
+          nullable: true
+        instance:
+          type: string
+          nullable: true
+      additionalProperties: true

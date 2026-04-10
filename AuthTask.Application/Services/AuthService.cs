@@ -6,6 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace AuthTask.Application.Services
 {
+    /// <summary>
+    /// Implements authentication workflows using ASP.NET Core Identity.
+    /// </summary>
     public class AuthService : IAuthService
     {
         private readonly UserManager<User> _userManager;
@@ -14,6 +17,14 @@ namespace AuthTask.Application.Services
         private readonly IEmployeeService _employeeService;
         private readonly IUnitOfWork _unitOfWork;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthService"/> class.
+        /// </summary>
+        /// <param name="userManager">Identity user manager.</param>
+        /// <param name="tokenService">Token generation service.</param>
+        /// <param name="logger">Logger instance.</param>
+        /// <param name="employeeService">Employee service used during registration.</param>
+        /// <param name="unitOfWork">Unit-of-work abstraction for transaction management.</param>
         public AuthService(
             UserManager<User> userManager,
             ITokenService tokenService,
@@ -29,6 +40,7 @@ namespace AuthTask.Application.Services
             _unitOfWork = unitOfWork;
         }
 
+        /// <inheritdoc />
         public async Task<Result<RegisterResponse>> RegisterAsync(
             RegisterRequest request,
             CancellationToken cancellationToken = default
@@ -36,6 +48,7 @@ namespace AuthTask.Application.Services
         {
             var user = new User { UserName = request.Email, Email = request.Email };
 
+            // User creation, role assignment, and employee creation should be handled as a single atomic transaction
             await _unitOfWork.BeginTransactionAsync(cancellationToken);
             try
             {
@@ -68,7 +81,7 @@ namespace AuthTask.Application.Services
                     );
                 }
 
-                // create an employee as well
+                // Registration creates both identity and employee records in one transaction.
                 var emplpoyeeId = await _employeeService.AddAsync(
                     new CreateEmployeeDto
                     {
@@ -94,6 +107,7 @@ namespace AuthTask.Application.Services
             }
         }
 
+        /// <inheritdoc />
         public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);

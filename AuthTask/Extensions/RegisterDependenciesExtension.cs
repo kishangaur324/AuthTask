@@ -6,8 +6,16 @@ using AuthTask.Infrastructure.Repositories;
 
 namespace AuthTask.Extensions
 {
+    /// <summary>
+    /// Registers application and infrastructure dependencies.
+    /// </summary>
     public static class RegisterDependenciesExtension
     {
+        /// <summary>
+        /// Adds service registrations required by the application.
+        /// </summary>
+        /// <param name="services">Service collection to configure.</param>
+        /// <returns>The same service collection for chaining.</returns>
         public static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
             services.AddScoped<ITrackingContextProvider, TrackingContextProvider>();
