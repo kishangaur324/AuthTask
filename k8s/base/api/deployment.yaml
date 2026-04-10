@@ -22,7 +22,6 @@ spec:
       containers:
         - name: auth-api
           image: kishangaur324/authtask-api:cdded530f79a2a376cfb760bea95532be258ae89
-                                            cdded530f79a2a376cfb760bea95532be258ae89
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
