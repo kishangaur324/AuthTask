@@ -25,8 +25,6 @@ paths:
       operationId: registerUser
       summary: Register a new user
       description: Requires `X-API-KEY` and uses auth-specific rate limiting.
-      security:
-        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -95,8 +93,6 @@ paths:
       operationId: loginUser
       summary: Authenticate and get JWT token
       description: Requires `X-API-KEY` and uses auth-specific rate limiting.
-      security:
-        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -150,7 +146,48 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiResponseString"
 
-  /api/Employee/update:
+  /api/Employees:
+    post:
+      tags: [Employee]
+      operationId: getEmployees
+      summary: Get paginated employee list
+      description: Requires authenticated user with `admin` role.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaginationRequest"
+      responses:
+        "200":
+          description: Employee list retrieved successfully.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponsePaginationResponseEmployeeDto"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedBearer"
+        "403":
+          $ref: "#/components/responses/ForbiddenBearer"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          description: Internal server error.
+          headers:
+            X-Tracking-Id:
+              $ref: "#/components/headers/XTrackingId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponsePaginationResponseEmployeeDto"
+
     put:
       tags: [Employee]
       operationId: updateEmployee
@@ -194,7 +231,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiResponseString"
 
-  /api/Employee/{id}:
+  /api/Employees/{id}:
     get:
       tags: [Employee]
       operationId: getEmployeeById
@@ -279,48 +316,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiResponseString"
-
-  /api/Employee/list:
-    post:
-      tags: [Employee]
-      operationId: getEmployees
-      summary: Get paginated employee list
-      description: Requires authenticated user with `admin` role.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PaginationRequest"
-      responses:
-        "200":
-          description: Employee list retrieved successfully.
-          headers:
-            X-Tracking-Id:
-              $ref: "#/components/headers/XTrackingId"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponsePaginationResponseEmployeeDto"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedBearer"
-        "403":
-          $ref: "#/components/responses/ForbiddenBearer"
-        "429":
-          $ref: "#/components/responses/TooManyRequests"
-        "500":
-          description: Internal server error.
-          headers:
-            X-Tracking-Id:
-              $ref: "#/components/headers/XTrackingId"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponsePaginationResponseEmployeeDto"
 
 components:
   securitySchemes:

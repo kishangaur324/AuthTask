@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-api
+  labels:
+    app: auth-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: auth-api
+  template:
+    metadata:
+      labels:
+        app: auth-api
+    spec:
+      initContainers:
+            - name: wait-for-db
+              image: busybox:1.36
+              command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done;']
+
+      containers:
+        - name: auth-api
+          image: kishangaur324/authtask-api:cdded530f79a2a376cfb760bea95532be258ae89
+                                            cdded530f79a2a376cfb760bea95532be258ae89
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"
+            
+            - name: ConnectionStrings__Default
+              valueFrom:
+                secretKeyRef:
+                  name: auth-db-secret
+                  key: ConnectionStrings__Default
+            - name: JwtConfig__SecretKey
+              valueFrom:
+                secretKeyRef:
+                  name: auth-db-secret
+                  key: JwtConfig__SecretKey
+
+            - name: ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: auth-db-secret
+                  key: ApiKey
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10

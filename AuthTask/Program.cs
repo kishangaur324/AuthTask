@@ -15,6 +15,9 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add health check to verify if app is running
+builder.Services.AddHealthChecks();
+
 // Add services to the container
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -27,7 +30,12 @@ builder.Host.UseSerilog();
 
 // Registering AuthDbContext for dependency injection
 builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Default"))
+    options
+        .UseNpgsql(builder.Configuration.GetConnectionString("Default"))
+        .EnableThreadSafetyChecks()
+        .EnableDetailedErrors()
+        .EnableServiceProviderCaching()
+        .EnableSensitiveDataLogging()
 );
 
 // Configuring .NetCore Identity to use the AuthDbContext for managing the Users, Roles etc.
@@ -94,7 +102,7 @@ builder.Services.AddRateLimiter(options =>
             partitionKey: context.Connection.RemoteIpAddress!.ToString(),
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 100,
+                PermitLimit = 500,
                 Window = TimeSpan.FromMinutes(10),
                 QueueLimit = 0,
             }
@@ -106,11 +114,22 @@ builder.Services.AddRateLimiter(options =>
         "auth",
         opt =>
         {
-            opt.PermitLimit = 5;
+            opt.PermitLimit = 50;
             opt.Window = TimeSpan.FromMinutes(1);
             opt.QueueLimit = 0;
         }
     );
+
+    // Adding status and response when the request get rejected due to quota
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+
+        await context.HttpContext.Response.WriteAsync(
+            "Too many requests! Calm down, dude. Are you trying to break the server?",
+            token
+        );
+    };
 });
 
 var app = builder.Build();
@@ -159,5 +178,7 @@ app.MapControllers();
 
 // Initializing the database for the any new migrations and seeding the default roles data.
 await app.InitializeDatabaseAsync();
+
+app.MapHealthChecks("/health");
 
 app.Run();

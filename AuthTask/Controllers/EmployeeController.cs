@@ -10,7 +10,7 @@ namespace AuthTask.Controllers
     /// <summary>
     /// Exposes employee management endpoints.
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/[controller]s")]
     [ApiController]
     public class EmployeeController : ControllerBase
     {
@@ -51,10 +51,12 @@ namespace AuthTask.Controllers
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [Authorize]
         [Consumes("application/json")]
-        [HttpPut("update")]
+        [HttpPut]
         public async Task<IActionResult> UpdateAsync([FromBody] UpdateEmployeeDto updateEmployee)
         {
-            var problem = await _updateEmployeeValidator.ValidateAsync<UpdateEmployeeDto>(updateEmployee);
+            var problem = await _updateEmployeeValidator.ValidateAsync<UpdateEmployeeDto>(
+                updateEmployee
+            );
             if (problem != null)
                 return problem;
 
@@ -105,10 +107,12 @@ namespace AuthTask.Controllers
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [Authorize(Policy = "AdminOnly")]
         [Consumes("application/json")]
-        [HttpPost("list")]
+        [HttpPost]
         public async Task<IActionResult> GetAllAsync([FromBody] PaginationRequest request)
         {
-            var problem = await _paginationRequestValidator.ValidateAsync<PaginationRequest>(request);
+            var problem = await _paginationRequestValidator.ValidateAsync<PaginationRequest>(
+                request
+            );
             if (problem != null)
                 return problem;
 

@@ -34,6 +34,9 @@ namespace AuthTask.Middlewares
                 "X-Tracking-Id",
                 trackingContextProvider.Current.TrackingId
             );
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (environment is not null)
+                context.Response.Headers.Append("Env", environment);
 
             using (LogContext.PushProperty("RequestId", trackingContextProvider.Current.TrackingId))
             {
