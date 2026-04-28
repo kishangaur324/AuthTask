@@ -20,6 +20,7 @@ namespace AuthTask.Controllers
         private readonly IAuthService _authService;
         private readonly IValidator<RegisterRequest> _registerValidator;
         private readonly IValidator<LoginRequest> _loginValidator;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -30,12 +31,38 @@ namespace AuthTask.Controllers
         public AuthController(
             IAuthService authService,
             IValidator<RegisterRequest> registerValidator,
-            IValidator<LoginRequest> loginValidator
+            IValidator<LoginRequest> loginValidator,
+            IHttpClientFactory httpClientFactory
         )
         {
             _authService = authService;
             _registerValidator = registerValidator;
             _loginValidator = loginValidator;
+            _httpClientFactory = httpClientFactory;
+        }
+
+        [AllowAnonymous]
+        [HttpGet("test500")]
+        public async Task<IActionResult> Test500Async()
+        {
+            return new ObjectResult(new ApiResponse<string> { Error = "Some error occurred" })
+            {
+                StatusCode = StatusCodes.Status500InternalServerError,
+            };
+        }
+
+        [AllowAnonymous]
+        [HttpGet("test200")]
+        public async Task<IActionResult> Test200Async()
+        {
+            return StatusCode(200);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("alwaysfail")]
+        public async Task<IActionResult> AlwaysFailAsync()
+        {
+            return StatusCode(500);
         }
 
         /// <summary>
@@ -65,6 +92,22 @@ namespace AuthTask.Controllers
                 return problem;
 
             var cancellationToken = HttpContext.RequestAborted;
+
+            var client = _httpClientFactory.CreateClient("ApiClient");
+
+            for (var i = 0; i < 10; i++)
+            {
+                var url =
+                    i % 2 == 0
+                        ? "https://localhost:7111/api/auth/alwaysfail"
+                        : "https://localhost:7111/api/auth/test200";
+                var response = await client.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Final status: {response.StatusCode}");
+                }
+            }
 
             var result = await _authService.RegisterAsync(request, cancellationToken);
 

@@ -2,6 +2,7 @@
 using AuthTask.Application.Services;
 using AuthTask.Context;
 using AuthTask.Filters;
+using AuthTask.Helper;
 using AuthTask.Infrastructure.Repositories;
 
 namespace AuthTask.Extensions
@@ -26,6 +27,7 @@ namespace AuthTask.Extensions
             services.AddScoped<IEmployeeService, EmployeeService>();
 
             services.AddScoped<ApiKeyFilter>();
+            services.AddSingleton<IRetryHandler, RetryHandler>();
             return services;
         }
     }

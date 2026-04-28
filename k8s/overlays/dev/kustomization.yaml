@@ -8,6 +8,8 @@ resources:
   - ../../base/db
   - ../../base/ingress
   - namespace.yaml
+  - secret-store.yaml
+  - external-secret.yaml
 
 patches:
   - path: patches/api-patch.yaml
